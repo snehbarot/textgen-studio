@@ -9,16 +9,58 @@
 <body>
 
     <div class="container">
-        <h2>TextGen Studio</h2>
+        <h1>TextGen Studio</h1>
+        <p>Enter a prompt and generate AI text instantly!</p>
 
-        <textarea id="prompt" placeholder="Enter your prompt..."></textarea>
+        <textarea id="prompt" placeholder="Type your prompt here..."></textarea>
 
-        <button onclick="generateText()">Generate</button>
+        <button id="generateBtn">Generate</button>
 
         <div id="output"></div>
     </div>
 
     <script src="/static/script.js"></script>
+    <script>
+        // Attach event to button
+        document.getElementById("generateBtn").addEventListener("click", generateText);
+
+        // Press Enter in textarea also triggers generation
+        document.getElementById("prompt").addEventListener("keypress", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                generateText();
+            }
+        });
+
+        async function generateText() {
+            const prompt = document.getElementById("prompt").value.trim();
+            const outputDiv = document.getElementById("output");
+
+            if (!prompt) {
+                outputDiv.innerHTML = "<p style='color:red;'>Please enter a prompt.</p>";
+                return;
+            }
+
+            outputDiv.innerHTML = "<p>Generating...</p>";
+
+            try {
+                const response = await fetch("/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    outputDiv.innerHTML = `<p style='color:red;'>${data.error}</p>`;
+                } else {
+                    outputDiv.innerHTML = `<p>${data.result}</p>`;
+                }
+            } catch (err) {
+                outputDiv.innerHTML = "<p style='color:red;'>Something went wrong. Please try again.</p>";
+            }
+        }
+    </script>
 </body>
 </html>
-
